@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300&display=swap" rel="stylesheet">
+
+	<title>ImReader</title>
+	<style>
+		body{
+			background-color: #222;
+			font-family: Source Code Pro;
+		}
+
+		.img_upload_label{
+			color: #ddd;
+			background-color: #124;
+			padding: 5px 10px;
+		}
+
+		.img_upload_label:hover{
+			cursor: pointer;
+		}
+
+		#fname_text{
+			color: #ddd;
+		}
+
+		#langselect{
+			background-color: #333;
+			border: none;
+			color: #aaa;
+			padding: 7px 3px;
+		}
+
+		#langselect:focus{
+			outline: none;
+		}
+
+		#submit_button{
+			background-color: #345;
+			border: none;
+			font-family: Source Code Pro;
+			font-size: 1.6vh;
+			color: #eee;
+			padding: 0.2vh 0.2vw;
+		}
+	</style>
+</head>
+<body>
+
+	<div id="visible-iframe" style="display: initial; position: fixed; width: 30%; height: 30%; top: 40%; left: 50%; transform: translate(-50%, 0); border: 5px solid #000; background-color: #1a1a1a; color: #aaa; padding: 10px 10px; overflow: scroll; font-size: 2.2vh">
+		<span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5vh" id="status_desc">
+			<span id="text_status_desc">Waiting for content upload...</span><span id="dot_status_desc"></span>
+		</span>
+		<span id="responsetext">
+		</span>
+	</div>
+
+	<iframe name="hidden-iframe" id="hidden-iframe" style="display: none">
+	</iframe>
+
+	<form action="/uploadimg" method="POST" target="hidden-iframe" enctype="multipart/form-data" id="uploadform" style="position: fixed; left: 50%; top: 25%; transform: translate(-50%, -50%); text-align: center">
+		<label for="image" class="img_upload_label">
+			Upload File
+		</label>
+
+		<br><br>
+
+		<span id="fname_text">
+			[No File Uploaded]
+		</span>
+
+		<br>
+
+		<input type="file" accept=".png,.jpg,.jpeg" name="image" id="image" style="display: none">
+		<br>
+
+		<select name="lang" id="langselect">
+		</select>
+
+		<br><br>
+		<input type="submit" value="Submit File" id="submit_button">
+	</form>
+	
+</body>
+<script type="text/javascript">
+	var langs = {
+
+	"afr" : "Afrikaans",
+	"amh" : "Amharic",
+	"ara" : "Arabic",
+	"asm" : "Assamese",
+	"aze" : "Azerbaijani",
+	"aze_cyrl" : "Azerbaijani - Cyrillic",
+	"bel" : "Belarusian",
+	"ben" : "Bengali",
+	"bod" : "Tibetan",
+	"bos" : "Bosnian",
+	"bul" : "Bulgarian",
+	"cat" : "Catalan; Valencian",
+	"ceb" : "Cebuano",
+	"ces" : "Czech",
+	"chi_sim" : "Chinese - Simplified",
+	"chi_tra" : "Chinese - Traditional",
+	"chr" : "Cherokee",
+	"cym" : "Welsh",
+	"dan" : "Danish",
+	"deu" : "German",
+	"dzo" : "Dzongkha",
+	"ell" : "Greek, Modern (1453 - present)",
+	"eng" : "English",
+	"enm" : "English, Middle (1100-1500)",
+	"epo" : "Esperanto",
+	"est" : "Estonian",
+	"eus" : "Basque",
+	"fas" : "Persian",
+	"fin" : "Finnish",
+	"fra" : "French",
+	"frk" : "German Fraktur",
+	"frm" : "French, Middle (ca. 1400-1600)",
+	"gle" : "Irish",
+	"glg" : "Galician",
+	"grc" : "Greek, Ancient (up to 1453)",
+	"guj" : "Gujarati",
+	"hat" : "Haitian; Haitian Creole",
+	"heb" : "Hebrew",
+	"hin" : "Hindi",
+	"hrv" : "Croatian",
+	"hun" : "Hungarian",
+	"iku" : "Inuktitut",
+	"ind" : "Indonesian",
+	"isl" : "Icelandic",
+	"ita" : "Italian",
+	"ita_old" : "Italian - Old",
+	"jav" : "Javanese",
+	"jpn" : "Japanese",
+	"kan" : "Kannada",
+	"kat" : "Georgian",
+	"kat_old" : "Georgian - Old",
+	"kaz" : "Kazakh",
+	"khm" : "Central Khmer",
+	"kir" : "Kirghiz; Kyrgyz",
+	"kor" : "Korean",
+	"kur" : "Kurdish",
+	"lao" : "Lao",
+	"lat" : "Latin",
+	"lav" : "Latvian",
+	"lit" : "Lithuanian",
+	"mal" : "Malayalam",
+	"mar" : "Marathi",
+	"mkd" : "Macedonian",
+	"mlt" : "Maltese",
+	"msa" : "Malay",
+	"mya" : "Burmese",
+	"nep" : "Nepali",
+	"nld" : "Dutch; Flemish",
+	"nor" : "Norwegian",
+	"ori" : "Oriya",
+	"pan" : "Panjabi; Punjabi",
+	"pol" : "Polish",
+	"por" : "Portuguese",
+	"pus" : "Pushto; Pashto",
+	"ron" : "Romanian; Moldavian; Moldovan",
+	"rus" : "Russian",
+	"san" : "Sanskrit",
+	"sin" : "Sinhala; Sinhalese",
+	"slk" : "Slovak",
+	"slv" : "Slovenian",
+	"spa" : "Spanish; Castilian",
+	"spa_old" : "Spanish; Castilian - Old",
+	"sqi" : "Albanian",
+	"srp" : "Serbian",
+	"srp_latn" : "Serbian - Latin",
+	"swa" : "Swahili",
+	"swe" : "Swedish",
+	"syr" : "Syriac",
+	"tam" : "Tamil",
+	"tel" : "Telugu",
+	"tgk" : "Tajik",
+	"tgl" : "Tagalog",
+	"tha" : "Thai",
+	"tir" : "Tigrinya",
+	"tur" : "Turkish",
+	"uig" : "Uighur; Uyghur",
+	"ukr" : "Ukrainian",
+	"urd" : "Urdu",
+	"uzb" : "Uzbek",
+	"uzb_cyrl" : "Uzbek - Cyrillic",
+	"vie" : "Vietnamese",
+	"yid" : "Yiddish"
+
+	}
+
+
+	var rev_langs = {}
+
+	for (var item of Object.keys(langs)){
+		rev_langs[langs[item]] = item
+	}
+
+	var alph_langoptns = Object.keys(rev_langs).sort()
+
+	for (var lang of alph_langoptns){
+		document.getElementById("langselect").innerHTML += "<option value='" + rev_langs[lang] + "'>" + lang + "</option>"
+	}
+
+
+	var dot_timeout;
+
+
+	var dot_span = document.getElementById("dot_status_desc")
+	function updateDotStatus(){
+		var content = dot_span.textContent
+		var newcont = ''
+
+		if (content == ''){
+			newcont = '.'
+		}
+		else if (content == '.'){
+			newcont = '..'
+		}
+		else if (content == '..'){
+			newcont = '...'
+		}
+		else if (content == '...'){
+			newcont = '.'
+		}
+
+		dot_span.textContent = newcont
+
+		dot_timeout = setTimeout(updateDotStatus, 300)
+	}
+
+	document.getElementById("image").addEventListener("change", function(e){
+		var fname = e.target.value.split( '\\' ).pop();
+		document.getElementById("fname_text").textContent = '[ ' + fname + ' ]'
+	})
+
+	document.getElementById("uploadform").addEventListener("submit", function(){
+		document.getElementById("text_status_desc").textContent = "Loading"
+		document.getElementById("dot_status_desc").textContent = "."
+		dot_timeout = setTimeout(updateDotStatus, 300)
+	})
+
+	document.getElementById("hidden-iframe").addEventListener("load", function(){
+		clearTimeout(dot_timeout)
+		document.getElementById("status_desc").textContent = ""
+		document.getElementById("responsetext").innerHTML = document.getElementById("hidden-iframe").contentDocument.body.innerHTML
+	})
+
+
+</script>
+</html>
